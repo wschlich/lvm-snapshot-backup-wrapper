@@ -22,7 +22,7 @@ export __ScriptLockDir="/var/lock" # default: /var/lock
 ## messages are only logged and/or mailed (if enabled).
 ## overrides __Print* variables!
 ## it should be possible to enable this by passing -q to the script.
-#export __MsgQuiet=0 # default: 0
+export __MsgQuiet=1 # default: 0
 
 ## timestamp format for the message functions,
 ## will be passed to date(1).
