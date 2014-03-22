@@ -46,7 +46,7 @@ fi
 
 ## system installation
 export ApplicationConfig="/etc/${__ScriptName}/${__ScriptName}.cfg.sh"
-export ApplicationLibrary="/usr/lib/${__ScriptName}.lib.sh"
+export ApplicationLibrary="/usr/share/${__ScriptName}/${__ScriptName}.lib.sh"
 ## local installation in dedicated script path
 #export ApplicationConfig="${__ScriptPath}/${__ScriptName}.cfg.sh"
 #export ApplicationLibrary="${__ScriptPath}/${__ScriptName}.lib.sh"

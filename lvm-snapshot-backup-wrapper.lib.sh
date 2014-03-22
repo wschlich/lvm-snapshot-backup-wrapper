@@ -28,6 +28,7 @@ function __main() {
 
 	## initialize variables
 	local -i Error=0
+	local -i Fatal=0
 	local -i SystemMirrorCreatedSuccessfully=0
 	local -i SystemMirrorCreatePreExecCommandRanSuccessfully=0
 	local -i SystemMirrorCreatePostExecCommandRanSuccessfully=0
@@ -41,7 +42,7 @@ function __main() {
 		__msg info "running system mirror create pre-exec command"
 		if ! eval ${SystemMirrorCreatePreExecCommand} &>"${_L}"; then
 			__msg err "failed running system mirror create pre-exec command"
-			let Error=1
+			let Fatal=1
 		else
 			__msg info "successfully ran the system mirror create pre-exec command"
 			let SystemMirrorCreatePreExecCommandRanSuccessfully=1
@@ -53,7 +54,7 @@ function __main() {
 		__msg info "creating system mirror"
 		if ! createSystemMirror; then
 			__msg err "failed to create system mirror"
-			let Error=1
+			let Fatal=1
 		else
 			__msg info "successfully created the system mirror"
 			let SystemMirrorCreatedSuccessfully=1
@@ -65,7 +66,7 @@ function __main() {
 		__msg info "running system mirror create post-exec command"
 		if ! eval ${SystemMirrorCreatePostExecCommand} &>"${_L}"; then
 			__msg err "failed running system mirror create post-exec command"
-			let Error=1
+			let Fatal=1
 		else
 			__msg info "successfully ran the system mirror create post-exec command"
 			let SystemMirrorCreatePostExecCommandRanSuccessfully=1
@@ -120,7 +121,7 @@ function __main() {
 		__msg info "running system mirror delete pre-exec command"
 		if ! eval ${SystemMirrorDeletePreExecCommand} &>"${_L}"; then
 			__msg err "failed running system mirror delete pre-exec command"
-			let Error=1
+			let Fatal=1
 		else
 			__msg info "successfully ran the system mirror delete pre-exec command"
 			let SystemMirrorDeletePreExecCommandRanSuccessfully=1
@@ -132,7 +133,7 @@ function __main() {
 		__msg info "deleting system mirror"
 		if ! deleteSystemMirror; then
 			__msg err "failed to delete the system mirror"
-			let Error=1
+			let Fatal=1
 		else
 			__msg info "successfully deleted the system mirror"
 			let SystemMirrorDeletedSuccessfully=1
@@ -144,16 +145,22 @@ function __main() {
 		__msg info "running system mirror delete post-exec command"
 		if ! eval ${SystemMirrorDeletePostExecCommand} &>"${_L}"; then
 			__msg err "failed running system mirror delete post-exec command"
-			let Error=1
+			let Fatal=1
 		else
 			__msg info "successfully ran the system mirror delete post-exec command"
 			let SystemMirrorDeletePostExecCommandRanSuccessfully=1
 		fi
 	fi
 
-	## check exit code variable
+	## check for fatal errors
+	if [[ ${Fatal} -gt 0 ]]; then
+		__die 2 "a fatal error occured, please check preceding log entries for details"
+	fi
+
+	## check for non-fatal errors (remove the lockfile before exiting)
 	if [[ ${Error} -gt 0 ]]; then
-		__die 2 "an error occured, please check preceding log entries for details"
+		rm -f "${__ScriptLockFile}" >&/dev/null # TODO FIXME
+		__die 2 "a non-fatal error occured, please check preceding log entries for details"
 	fi
 
 	__msg info "finished successfully"
@@ -245,7 +252,7 @@ function runRdiffBackup() {
 	/usr/bin/chroot "${SystemMirrorMountDirectory}" "${RdiffBackup}" --server --restrict-read-only /
 	local -i rdiffBackupExitCode=${?}
 	if [[ ${rdiffBackupExitCode} > 0 ]]; then
-		__msg err "failed running rdiff-backup (exit code: ${rdiffBackupExitCode}"
+		__msg err "failed running rdiff-backup (exit code: ${rdiffBackupExitCode})"
 		return 2 # error
 	fi
 
@@ -274,10 +281,17 @@ function runRsync() {
 	## run rsync chrooted inside system mirror
 	/usr/bin/chroot "${SystemMirrorMountDirectory}" "${Rsync}" --server --sender ${RsyncArgs} . /
 	local -i rsyncExitCode=${?}
-	if [[ ${rsyncExitCode} > 0 ]]; then
-		__msg err "failed running rsync (exit code: ${rsyncExitCode}"
-		return 2 # error
-	fi
+	case ${rsyncExitCode} in
+		0)
+			;;
+		24)
+			__msg notice "rsync reported vanished source files during transfer, continuing"
+			;;
+		*)
+			__msg err "failed running rsync (exit code: ${rsyncExitCode}"
+			return 2 # error
+			;;
+	esac
 
 	return 0 # success
 
