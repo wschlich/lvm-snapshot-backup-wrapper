@@ -1,0 +1,3 @@
+## Allow backup user to run lvm-snapshot-backup-wrapper.sh
+Defaults:backup always_set_home,env_keep=SSH_ORIGINAL_COMMAND
+backup ALL=(ROOT) NOPASSWD: /usr/sbin/lvm-snapshot-backup-wrapper.sh

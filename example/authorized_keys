@@ -1,0 +1,3 @@
+## $Id: authorized_keys,v 1.2 2009/05/27 12:22:36 wschlich Exp wschlich $
+command="sudo /usr/sbin/lvm-snapshot-backup-wrapper.sh",from="backupserver1.example.com",no-port-forwarding,no-X11-forwarding,no-pty ssh-rsa KEYDATA backup@backupserver1.example.com
+command="sudo /usr/sbin/lvm-snapshot-backup-wrapper.sh",from="backupserver2.example.com",no-port-forwarding,no-X11-forwarding,no-pty ssh-rsa KEYDATA backup@backupserver2.example.com
