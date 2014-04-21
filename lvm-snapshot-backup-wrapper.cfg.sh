@@ -1,8 +1,11 @@
-## $Id: lvm-snapshot-backup-wrapper.cfg.sh,v 1.2 2009/05/27 12:16:23 wschlich Exp wschlich $
 ## vim:ts=4:sw=4:tw=200:nu:ai:nowrap:
+##
+## application config for lvm-snapshot-backup-wrapper
 ##
 ## Created by Wolfram Schlich <wschlich@gentoo.org>
 ## Licensed under the GNU GPLv3
+## Web: http://www.bashinator.org/projects/lvm-snapshot-backup-wrapper/
+## Code: https://github.com/wschlich/lvm-snapshot-backup-wrapper/
 ##
 
 ##
